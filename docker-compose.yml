@@ -1,8 +1,6 @@
 version: '3'
 services:
   pgbackupminio:
-    image: insignficant/backup-postgresql-to-minio
+    image: gchr.io/icyleaf/backup-postgres-to-minio
     env_file:
       - .env
-    network_mode: host
-    container_name: pgbackupminio

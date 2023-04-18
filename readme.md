@@ -1,13 +1,15 @@
 
 
-# Backup Postgresql to Minio S3 
+# Backup Postgresql to Minio S3
 
 # Supported Versions
-* 9 
+* 9
 * 10
 * 11
 * 12
 * 13
+* 14
+* 15
 
 #### `cp .env.example .env`
 ```
@@ -22,7 +24,7 @@ MINIO_SERVER=http://127.0.0.1:9000
 version: '3'
 services:
   pgbackupminio:
-    image: insignficant/backup-postgresql-to-minio
+    image: gchr.io/icyleaf/backup-postgres-to-minio
     env_file:
       - .env
     network_mode: host
@@ -38,7 +40,7 @@ services:
 - `MINIO_HOST` - Your Minio Host
 
 - `POSTGRES_HOST` - Hostname of the PostgreSQL database to backup, alternatively this container can be linked to the container with the name `postgres`.
-- `POSTGRES_DATABASE` - Name of the PostgreSQL database to backup.
+- `POSTGRES_DATABASE` - Name of the PostgreSQL database to backup. (optinal, backup all database to keep it empty)
 - `POSTGRES_USER` - PostgreSQL user, with priviledges to dump the database.
 
 ### Optional Enviroment Variables
@@ -50,7 +52,7 @@ services:
 - `SCHEDULE` - Cron schedule to run periodic backups.
 
 
-# some script from 
+# some script from
 -  URL : https://github.com/wonderu/docker-backup-postgres-s3
--  URL : https://github.com/schickling/dockerfiles/tree/master/postgres-backup-s3 
+-  URL : https://github.com/schickling/dockerfiles/tree/master/postgres-backup-s3
 -  More information about the scheduling can be found [here](http://godoc.org/github.com/robfig/cron#hdr-Predefined_schedules).

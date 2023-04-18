@@ -1,15 +1,15 @@
-FROM alpine:3.13.0
-
+FROM alpine:3.17
 
 WORKDIR /app
-RUN apk add --no-cache postgresql-client  && \
+RUN apk add --update --no-cache postgresql-client && \
     rm -rf /var/cache/apk/*
 
-COPY run.sh run.sh
-COPY mc /usr/local/bin/mc
+ADD https://dl.min.io/client/mc/release/linux-amd64/mc /usr/local/bin/mc
 COPY go-cron /usr/local/bin/go-cron
+RUN chmod +x /usr/local/bin/mc && chmod +x /usr/local/bin/go-cron
+
+COPY run.sh run.sh
 COPY backup.sh backup.sh
-RUN chmod +x  /usr/local/bin/mc && chmod +x /usr/local/bin/go-cron
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
