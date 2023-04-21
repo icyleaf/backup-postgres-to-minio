@@ -50,7 +50,7 @@ export PGPORT=${PGPORT:-$POSTGRES_PORT}
 
 backup_db_to_minio() {
   db_name=$1
-  bucket_path="minio/${MINIO_BUCKET}/${db_name}_$(date +'%Y-%m-%dT%H:%M:%SZ').sql.gz"
+  bucket_path="minio/${MINIO_BUCKET}/${db_name}/${db_name}_$(date +'%Y-%m-%dT%H:%M:%SZ').sql.gz"
 
   if [[ "$ENABLE_PIPE" == "true" ]] || [[ "$ENABLE_PIPE" == "1" ]]; then
     echo "Creating dump of ${db_name} database from ${POSTGRES_HOST} and pipe to bucket $MINIO_BUCKET ..."
