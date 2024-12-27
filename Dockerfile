@@ -1,4 +1,4 @@
-FROM alpine:3.17
+FROM alpine:3.21
 
 WORKDIR /app
 RUN apk add --update --no-cache postgresql-client && \
