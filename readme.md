@@ -10,6 +10,7 @@
 * 13
 * 14
 * 15
+* 16
 
 #### `cp .env.example .env`
 ```
@@ -31,7 +32,6 @@ services:
     container_name: pgbackupminio
 ```
 
-
 ## Required Envionment Variables
 
 - `MINIO_ACCESS_KEY` - Your Minio access key.
@@ -40,7 +40,7 @@ services:
 - `MINIO_HOST` - Your Minio Host
 
 - `POSTGRES_HOST` - Hostname of the PostgreSQL database to backup, alternatively this container can be linked to the container with the name `postgres`.
-- `POSTGRES_DATABASE` - Name of the PostgreSQL database to backup. (optinal, backup all database to keep it empty)
+- `POSTGRES_DATABASE` - Name of the PostgreSQL database to backup. (optinal, backup all database to keep it empty, set `all` to call pg_dumpall into one single file)
 - `POSTGRES_USER` - PostgreSQL user, with priviledges to dump the database.
 
 ### Optional Enviroment Variables
@@ -48,9 +48,9 @@ services:
 - `POSTGRES_PASSWORD` - Password for the PostgreSQL user, if you are using a database on the same machine this isn't usually needed.
 - `POSTGRES_PORT` - Port of the PostgreSQL database, uses the default 5432.
 - `POSTGRES_EXTRA_OPTS` - Extra arguments to pass to the `pg_dump` command.
+- `ARCHIVE_FILENAME` - Specified archive filename, such `latest.sql.gz` (default to empty, which means it will use date filename format.)
 - `MINIO_API_VERSION` - you can change with S3v4 or S3v2.
 - `SCHEDULE` - Cron schedule to run periodic backups.
-
 
 # some script from
 -  URL : https://github.com/wonderu/docker-backup-postgres-s3

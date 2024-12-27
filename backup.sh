@@ -50,15 +50,34 @@ export PGPORT=${PGPORT:-$POSTGRES_PORT}
 
 backup_db_to_minio() {
   db_name=$1
-  bucket_path="minio/${MINIO_BUCKET}/${db_name}/${db_name}_$(date +'%Y-%m-%dT%H:%M:%SZ').sql.gz"
+  filename=$2
+  bucket_path="minio/${MINIO_BUCKET}/${db_name}/${db_name}_${filename}"
 
-  if [[ "$ENABLE_PIPE" == "true" ]] || [[ "$ENABLE_PIPE" == "1" ]]; then
+  if [[ "$ENABLE_PIPE" == "true" || "$ENABLE_PIPE" == "yes" || "$ENABLE_PIPE" == "1" ]]; then
     echo "Creating dump of ${db_name} database from ${POSTGRES_HOST} and pipe to bucket $MINIO_BUCKET ..."
     pg_dump $POSTGRES_EXTRA_OPTS "${db_name}" | gzip | mc pipe $bucket_path
   else
     echo "Creating dump of ${db_name} database from ${POSTGRES_HOST} ..."
-    backup_file="$HOME/${db_name}.sql.gz"
+    backup_file=${db_name}.sql.gz
     pg_dump $POSTGRES_EXTRA_OPTS "${db_name}" | gzip > "$backup_file"
+
+    echo "Uploading dump to bucket $MINIO_BUCKET"
+    mc cp $backup_file $bucket_path
+    rm -f $backup_file
+  fi
+}
+
+backup_all_to_minio() {
+  filename=$1
+  bucket_path="minio/${MINIO_BUCKET}/full/${filename}"
+
+  if [[ "$ENABLE_PIPE" == "true" || "$ENABLE_PIPE" == "yes" || "$ENABLE_PIPE" == "1" ]]; then
+    echo "Creating dump all database from ${POSTGRES_HOST} and pipe to bucket $MINIO_BUCKET ..."
+    pg_dumpall $POSTGRES_EXTRA_OPTS | gzip | mc pipe $bucket_path
+  else
+    echo "Creating dump all database from ${POSTGRES_HOST} ..."
+    backup_file="full.sql.gz"
+    pg_dumpall $POSTGRES_EXTRA_OPTS | gzip > "$backup_file"
 
     echo "Uploading dump to bucket $MINIO_BUCKET"
     mc cp $backup_file $bucket_path
@@ -75,14 +94,18 @@ else
   mc alias set minio "$MINIO_SERVER" "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY" --api "$MINIO_API_VERSION" > /dev/null
 fi
 
-if [[ -z "${POSTGRES_DATABASE}" ]]; then
+ARCHIVE_FILENAME=${ARCHIVE_FILENAME:-"$(date +'%Y-%m-%dT%H:%M:%SZ').sql.gz"}
+if [[ "${POSTGRES_DATABASE}" = "all" ]]; then
+  echo "Backup all databases of postgresl ..."
+  backup_all_to_minio $ARCHIVE_FILENAME
+elif [[ -z "${POSTGRES_DATABASE}" || "${POSTGRES_DATABASE}" = "all" ]]; then
   echo "Backup all databases of postgresl ..."
   DATABASES=$(psql $POSTGRES_EXTRA_OPTS -t -c "SELECT datname FROM pg_database WHERE datname NOT IN ('template0', 'template1', 'postgres')")
   for DATABASE in $DATABASES; do
-    backup_db_to_minio $DATABASE
+    backup_db_to_minio $DATABASE $ARCHIVE_FILENAME
   done
 else
-  backup_db_to_minio $POSTGRES_DATABASE
+  backup_db_to_minio $POSTGRES_DATABASE $ARCHIVE_FILENAME
 fi
 
 echo "SQL backup uploaded successfully" 1>&2
